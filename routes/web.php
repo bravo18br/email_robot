@@ -1,11 +1,19 @@
 <?php
 
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\RegraController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', function () {
+    return view ('welcome');
+})->name('home');
+
 // Grupo de rotas para operações com as Regras
 Route::resource('regra', RegraController::class);
+
+// Grupo de rotas para operações com os Logs
+Route::resource('log', LogController::class);
 
 // Grupo de rotas para operações com o Mailo
 Route::prefix('mailo')->group(function () {

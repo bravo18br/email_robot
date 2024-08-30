@@ -8,12 +8,6 @@ use Illuminate\Support\Facades\Validator;
 
 class RegraController extends Controller
 {
-    public function index()
-    {
-        $regras = Regra::all();
-        return view("welcome", compact("regras"));
-    }
-
     public function store(Request $request)
     {
         $validatedData = $this->validaRegra($request);
