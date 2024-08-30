@@ -52,6 +52,7 @@ class LogController extends Controller
      */
     public function destroy(Log $log)
     {
-        //
+        $log->delete();
+        return redirect()->back()->with(['sucesso' => 'Log excluído com sucesso!']);
     }
 }

@@ -165,10 +165,6 @@ class EmailController extends Controller
                     $subject = $firstMessage->get('subject')[0];
                     try {
                         $firstMessage->delete($expunge = true);
-                        Log::create([
-                            'processo' => __FUNCTION__,
-                            'detalhe' => 'Mensagem com subject (' . $subject . ') encontrada.'
-                        ]);
                     } catch (\Exception $deleteException) {
                         Log::create([
                             'processo' => __FUNCTION__,
@@ -178,10 +174,6 @@ class EmailController extends Controller
                     return $subject;
                 }
             }
-            Log::create([
-                'processo' => __FUNCTION__,
-                'detalhe' => 'Nenhuma mensagem encontrada'
-            ]);
         } catch (\Exception $e) {
             Log::create([
                 'processo' => __FUNCTION__,
@@ -193,25 +185,31 @@ class EmailController extends Controller
 
     public function executaTarefas()
     {
-        $log = ['processo' => __FUNCTION__];
-        $http_status = 500;
         try {
             $subject = $this->buscaSubject();
-            $regra = Regra::where('subject', $subject)->where('status', 'ativado')->first();
-            if ($regra) {
-                // $response = Http::get($regra->webhook);
-                $response = Http::withoutVerifying()->get($regra->webhook); //essa forma desabilita o SSL
-                $log['detalhe'] = $response->successful() ? 'Response webhook sucesso' : 'Response webhook error';
-                $http_status = $response->successful() ? 200 : 500;
-            } else {
-                $log['detalhe'] = 'Nenhuma regra ativada encontrada para o subject: ' . $subject;
-                $http_status = 200;
+            while ($subject !== 'Nenhuma mensagem encontrada') {
+
+                //converter em job (esse processo é muito lento)
+                $regra = Regra::where('subject', $subject)->where('status', 'ativado')->first();
+                if ($regra) {
+                    $response = Http::withoutVerifying()->get($regra->webhook);
+                    Log::create([
+                        'processo' => __FUNCTION__,
+                        'detalhe' => $response->successful() ? 'Response webhook sucesso' : 'Response webhook error'
+                    ]);
+                }
+                $subject = $this->buscaSubject();
             }
         } catch (\Exception $e) {
-            $log['detalhe'] = 'Erro: ' . $e->getMessage();
+            Log::create([
+                'processo' => __FUNCTION__,
+                'detalhe' => $e->getMessage()
+            ]);
         }
-        Log::create($log);
-        return response()->json($log, $http_status);
+    }
+
+    public function httpExecutaTarefas() {
+        $this->executaTarefas();
     }
 
     public function deleteMessage($message)

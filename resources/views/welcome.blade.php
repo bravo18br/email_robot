@@ -14,6 +14,7 @@
         <x-notificacao-erro></x-notificacao-erro>
         <x-notificacao-sucesso></x-notificacao-sucesso>
         <x-gerenciar-regras></x-gerenciar-regras>
+        <x-gerenciar-logs></x-gerenciar-logs>
     </div>
 </body>
 
